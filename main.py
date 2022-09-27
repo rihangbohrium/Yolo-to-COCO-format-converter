@@ -19,11 +19,9 @@ import imagesize
 YOLO_DARKNET_SUB_DIR = "YOLO_darknet"
 
 classes = [
-    "chair",
-    "handle",
-    "table",
-    "button",
-    "person",
+    "0",
+    "1",
+    "2",
 ]
 
 
