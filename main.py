@@ -16,8 +16,6 @@ import imagesize
 # Don't change the list name 'Classes'          #
 #################################################
 
-YOLO_DARKNET_SUB_DIR = "YOLO_darknet"
-
 classes = [
     "0",
     "1",
@@ -26,15 +24,19 @@ classes = [
 
 
 def get_images_info_and_annotations(opt):
-    path = Path(opt.path)
+    images_path = Path(opt.images_path)
+    annotations_path = Path(opt.annotations_path)
+
+    print("*", annotations_path)
+
     annotations = []
     images_annotations = []
-    if path.is_dir():
-        file_paths = sorted(path.rglob("*.jpg"))
-        file_paths += sorted(path.rglob("*.jpeg"))
-        file_paths += sorted(path.rglob("*.png"))
+    if images_path.is_dir():
+        file_paths = sorted(images_path.rglob("*.jpg"))
+        file_paths += sorted(images_path.rglob("*.jpeg"))
+        file_paths += sorted(images_path.rglob("*.png"))
     else:
-        with open(path, "r") as fp:
+        with open(images_path, "r") as fp:
             read_lines = fp.readlines()
         file_paths = [Path(line.replace("\n", "")) for line in read_lines]
 
@@ -42,6 +44,7 @@ def get_images_info_and_annotations(opt):
     annotation_id = 1  # In COCO dataset format, you must start annotation id with '1'
 
     for file_path in file_paths:
+
         # Check how many items have progressed
         print("\rProcessing " + str(image_id) + " ...", end='')
 
@@ -53,15 +56,9 @@ def get_images_info_and_annotations(opt):
         images_annotations.append(image_annotation)
 
         label_file_name = f"{file_path.stem}.txt"
-        if opt.yolo_subdir:
-            annotations_path = file_path.parent / YOLO_DARKNET_SUB_DIR / label_file_name
-        else:
-            annotations_path = file_path.parent / label_file_name
+        annotation_path = annotations_path / label_file_name
 
-        if not annotations_path.exists():
-            continue  # The image may not have any applicable annotation txt file.
-
-        with open(str(annotations_path), "r") as label_file:
+        with open(str(annotation_path), "r") as label_file:
             label_read_line = label_file.readlines()
 
         # yolo format - (class_id, x_center, y_center, width, height)
@@ -170,10 +167,16 @@ def debug(opt):
 def get_args():
     parser = argparse.ArgumentParser("Yolo format annotations to COCO dataset format")
     parser.add_argument(
-        "-p",
-        "--path",
+        "-i",
+        "--images_path",
         type=str,
-        help="Absolute path for 'train.txt' or 'test.txt', or the root dir for images.",
+        help="Absolute path to images.",
+    )
+    parser.add_argument(
+        "-a",
+        "--annotations_path",
+        type=str,
+        help="Absolute path for '\{image_name\}.txt' or 'test.txt'",
     )
     parser.add_argument(
         "--debug",
@@ -185,11 +188,6 @@ def get_args():
         default="train_coco.json",
         type=str,
         help="Name the output json file",
-    )
-    parser.add_argument(
-        "--yolo-subdir",
-        action="store_true",
-        help="Annotations are stored in a subdir not side by side with images.",
     )
     parser.add_argument(
         "--box2seg",
