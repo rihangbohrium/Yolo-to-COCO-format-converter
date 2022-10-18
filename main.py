@@ -61,15 +61,15 @@ def get_images_info_and_annotations(opt):
 
         # yolo format - (class_id, x_center, y_center, width, height)
         # coco format - (annotation_id, x_upper_left, y_upper_left, width, height)
-        for line1 in label_read_line:
-            label_line = line1
+        for line in label_read_line:
+            label_line = line.split()
             category_id = (
-                int(label_line.split()[0]) + 1
+                int(label_line[0]) + 1
             )  # you start with annotation id with '1'
-            x_center = float(label_line.split()[1])
-            y_center = float(label_line.split()[2])
-            width = float(label_line.split()[3])
-            height = float(label_line.split()[4])
+            x_center = float(label_line[1])
+            y_center = float(label_line[2])
+            width = float(label_line[3])
+            height = float(label_line[4])
 
             float_x_center = w * x_center
             float_y_center = h * y_center
@@ -81,6 +81,12 @@ def get_images_info_and_annotations(opt):
             width = int(float_width)
             height = int(float_height)
 
+            seg_pts = []
+            if len(label_line) > 5:
+                # take 6th index and onward, 5th index represents number of points
+                seg_pts = label_line[6:]
+
+
             annotation = create_annotation_from_yolo_format(
                 min_x,
                 min_y,
@@ -89,8 +95,10 @@ def get_images_info_and_annotations(opt):
                 image_id,
                 category_id,
                 annotation_id,
-                segmentation=opt.box2seg,
+                segmentation=seg_pts,
             )
+
+
             annotations.append(annotation)
             annotation_id += 1
 
@@ -186,12 +194,6 @@ def get_args():
         default="train_coco.json",
         type=str,
         help="Name the output json file",
-    )
-    parser.add_argument(
-        "--box2seg",
-        action="store_true",
-        help="Coco segmentation will be populated with a polygon "
-        "that matches replicates the bounding box data.",
     )
     args = parser.parse_args()
     return args
