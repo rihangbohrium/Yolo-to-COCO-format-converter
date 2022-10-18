@@ -83,7 +83,7 @@ def get_images_info_and_annotations(opt):
 
             seg_pts = []
             if len(label_line) > 5:
-                # take 6th index and onward, 5th index represents number of points
+                # take 6th index and onward, 5th index represents number pairs of points
                 seg_pts = label_line[6:]
 
 
