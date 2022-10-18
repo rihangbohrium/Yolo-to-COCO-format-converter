@@ -27,8 +27,6 @@ def get_images_info_and_annotations(opt):
     images_path = Path(opt.images_path)
     annotations_path = Path(opt.annotations_path)
 
-    print("*", annotations_path)
-
     annotations = []
     images_annotations = []
     if images_path.is_dir():
